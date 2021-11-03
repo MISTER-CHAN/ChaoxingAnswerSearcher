@@ -2,6 +2,7 @@ package com.mister_chan.chaoxinganswersearcher;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -32,9 +33,9 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
-    private class QuestionBank {
-        private String url;
-        private String exception;
+    private static class QuestionBank {
+        private final String url;
+        private final String exception;
 
         QuestionBank(String url, String exception) {
             this.url = url;
@@ -42,12 +43,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("StaticFieldLeak")
     private class SearchingAnswerAsyncTask extends AsyncTask<Void, Void, Void> {
 
-        private Button bAnswer, bSearch;
-        private LinearLayout llAnswers;
-        private String number;
-        private String question;
+        private final Button bAnswer, bSearch;
+        private final LinearLayout llAnswers;
+        private final String number;
+        private final String question;
 
         SearchingAnswerAsyncTask(String number, String question, View parent) {
             this.number = number;
@@ -152,6 +154,7 @@ public class MainActivity extends AppCompatActivity {
                 });
     }
 
+    @SuppressLint("SetJavaScriptEnabled")
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
