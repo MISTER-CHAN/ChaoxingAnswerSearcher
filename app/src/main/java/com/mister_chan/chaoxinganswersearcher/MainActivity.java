@@ -123,7 +123,7 @@ public class MainActivity extends AppCompatActivity {
 
         String line;
         while ((line = bufferedReader.readLine()) != null) {
-            stringBuilder.append(line + "\n");
+            stringBuilder.append(line).append("\n");
         }
         bufferedReader.close();
 
