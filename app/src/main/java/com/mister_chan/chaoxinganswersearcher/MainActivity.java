@@ -206,13 +206,14 @@ public class MainActivity extends AppCompatActivity {
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && webView.canGoBack()) {
             webView.goBack();
+            return true;
         }
         return super.onKeyDown(keyCode, event);
     }
 
     public void search(View v) {
         v.setEnabled(false);
-        ((Button) v).setText("请稍等");
+        ((Button) v).setText("请稍等…");
         View parent = (View) v.getParent().getParent();
         String number = ((TextView) parent.findViewById(R.id.tv_number)).getText().toString();
         String question = ((TextView) parent.findViewById(R.id.tv_question)).getText().toString();
