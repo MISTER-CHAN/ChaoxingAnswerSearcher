@@ -46,7 +46,7 @@ public class MainActivity extends AppCompatActivity {
     @SuppressLint("StaticFieldLeak")
     private class SearchingAnswerAsyncTask extends AsyncTask<Void, Void, Void> {
 
-        private final Button bAnswer, bSearch;
+        private final Button bSearch;
         private final LinearLayout llAnswers;
         private final String number;
         private final String question;
@@ -54,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
         SearchingAnswerAsyncTask(String number, String question, View parent) {
             this.number = number;
             this.question = question;
-            bAnswer = parent.findViewById(R.id.b_answer);
             bSearch = parent.findViewById(R.id.b_search);
             llAnswers = parent.findViewById(R.id.ll_answers);
         }
@@ -73,8 +72,6 @@ public class MainActivity extends AppCompatActivity {
                                     TextView tv = new TextView(MainActivity.this);
                                     tv.setText(answer);
                                     llAnswers.addView(tv);
-                                    bSearch.setVisibility(View.GONE);
-                                    bAnswer.setVisibility(View.VISIBLE);
                                 }
                             });
                         } catch (IOException | JSONException e) {
@@ -86,6 +83,8 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
     }
+
+    private static final String DO_WORK_URL_PREFIX = "https://mooc1.chaoxing.com/mooc2/work/dowork?courseId=";
 
     private ScrollView svQuestions;
     private QuestionBank[] questionBanks = {
@@ -142,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public void onReceiveValue(String value) {
                         if (!"null".equals(value)) {
-                            String[] questions = value.split(",,");
+                            String[] questions = value.substring(1, value.length() - 1).split(",,");
                             for (int i = 0; i < questions.length; i++) {
                                 LinearLayout layout = (LinearLayout) layoutInflater.inflate(R.layout.question, null);
                                 ((TextView) layout.findViewById(R.id.tv_number)).setText(String.valueOf(i + 1));
@@ -189,7 +188,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageFinished(WebView view, String url) {
                 webView.getSettings().setBlockNetworkImage(false);
-                if (url.startsWith("https://mooc1.chaoxing.com/mooc2/work/dowork?courseId=")) {
+                if (url.startsWith(DO_WORK_URL_PREFIX)) {
                     match();
                 }
                 super.onPageFinished(view, url);
@@ -198,6 +197,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onPageStarted(WebView view, String url, Bitmap favicon) {
                 webView.getSettings().setBlockNetworkImage(true);
+                if (!url.startsWith(DO_WORK_URL_PREFIX)) {
+                    llQuestions.removeAllViews();
+                }
                 super.onPageStarted(view, url, favicon);
             }
         });
@@ -216,7 +218,6 @@ public class MainActivity extends AppCompatActivity {
 
     public void search(View v) {
         v.setEnabled(false);
-        ((Button) v).setText("请稍等…");
         View parent = (View) v.getParent().getParent();
         String number = ((TextView) parent.findViewById(R.id.tv_number)).getText().toString();
         String question = ((TextView) parent.findViewById(R.id.tv_question)).getText().toString();

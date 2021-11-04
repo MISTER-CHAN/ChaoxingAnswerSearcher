@@ -50,14 +50,6 @@
             android:onClick="search"
             android:text="搜寻答案" />
 
-        <Button
-            android:id="@+id/b_answer"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:onClick="answer"
-            android:text="填上答案"
-            android:visibility="gone" />
-
     </LinearLayout>
 
 </LinearLayout>
