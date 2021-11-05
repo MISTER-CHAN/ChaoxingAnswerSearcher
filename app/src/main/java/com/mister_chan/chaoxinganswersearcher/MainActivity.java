@@ -9,6 +9,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.regex.Pattern;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -99,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
     private WebView webView;
 
     public void answer(View v) {
-
+        String answer = ((TextView) v).getText().toString();
     }
 
     public void copyQuestion(View v) {
@@ -129,8 +131,29 @@ public class MainActivity extends AppCompatActivity {
         return new JSONObject(stringBuilder.toString());
     }
 
-    public void match() {
-        llQuestions.removeAllViews();
+    private boolean isPageHeaderEqualTo0(String url) {
+        return Pattern.compile("^https://mooc2-anschaoxing\\.com/mycourse/stu\\?courseid=.+&pageHeader=0").matcher(url).find();
+    }
+
+    private void matchTask() {
+        webView.evaluateJavascript("" +
+                        "var elements = document.getElementsByClassName(\"topic-txt fs15\"), questions = [];" +
+                        "for (var i = 0; i < elements.length; i++) {" +
+                        "    questions.push(elements[i].innerText);" +
+                        "}" +
+                        "question.join(\",,\")",
+                new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String value) {
+                        if (!"null".equals(value)) {
+                            String[] questions = value.substring(1, value.length() - 1).split(",,");
+                            showQuestions(questions);
+                        }
+                    }
+                });
+    }
+
+    private void matchWork() {
         webView.evaluateJavascript("" +
                         "var elements = document.getElementsByClassName(\"mark_name colorDeep\"), questions = [];" +
                         "for (var i = 0; i < elements.length; i++) {" +
@@ -142,12 +165,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onReceiveValue(String value) {
                         if (!"null".equals(value)) {
                             String[] questions = value.substring(1, value.length() - 1).split(",,");
-                            for (int i = 0; i < questions.length; i++) {
-                                LinearLayout layout = (LinearLayout) layoutInflater.inflate(R.layout.question, null);
-                                ((TextView) layout.findViewById(R.id.tv_number)).setText(String.valueOf(i + 1));
-                                ((TextView) layout.findViewById(R.id.tv_question)).setText(questions[i]);
-                                llQuestions.addView(layout.findViewById(R.id.ll_question));
-                            }
+                            showQuestions(questions);
                         }
                     }
                 });
@@ -177,9 +195,9 @@ public class MainActivity extends AppCompatActivity {
         webView = findViewById(R.id.wv);
         WebSettings ws = webView.getSettings();
         ws.setAllowFileAccess(true);
-        ws.setAppCacheEnabled(true);
+        ws.setAppCacheEnabled(false);
         ws.setBlockNetworkImage(true);
-        ws.setCacheMode(WebSettings.LOAD_CACHE_ELSE_NETWORK);
+        ws.setCacheMode(WebSettings.LOAD_NO_CACHE);
         ws.setDatabaseEnabled(true);
         ws.setDomStorageEnabled(true);
         ws.setJavaScriptEnabled(true);
@@ -189,7 +207,7 @@ public class MainActivity extends AppCompatActivity {
             public void onPageFinished(WebView view, String url) {
                 webView.getSettings().setBlockNetworkImage(false);
                 if (url.startsWith(DO_WORK_URL_PREFIX)) {
-                    match();
+                    matchWork();
                 }
                 super.onPageFinished(view, url);
             }
@@ -222,5 +240,14 @@ public class MainActivity extends AppCompatActivity {
         String number = ((TextView) parent.findViewById(R.id.tv_number)).getText().toString();
         String question = ((TextView) parent.findViewById(R.id.tv_question)).getText().toString();
         new SearchingAnswerAsyncTask(number, question, parent).execute();
+    }
+
+    private void showQuestions(String[] questions) {
+        for (int i = 0; i < questions.length; i++) {
+            LinearLayout layout = (LinearLayout) layoutInflater.inflate(R.layout.question, null);
+            ((TextView) layout.findViewById(R.id.tv_number)).setText(String.valueOf(i + 1));
+            ((TextView) layout.findViewById(R.id.tv_question)).setText(questions[i]);
+            llQuestions.addView(layout.findViewById(R.id.ll_question));
+        }
     }
 }
