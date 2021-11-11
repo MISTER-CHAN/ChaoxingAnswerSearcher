@@ -73,6 +73,12 @@ public class MainActivity extends AppCompatActivity {
                                 public void run() {
                                     TextView tv = new TextView(MainActivity.this);
                                     tv.setText(answer);
+                                    tv.setOnClickListener(new View.OnClickListener() {
+                                        @Override
+                                        public void onClick(View v) {
+                                            answer(v);
+                                        }
+                                    });
                                     llAnswers.addView(tv);
                                 }
                             });
@@ -102,6 +108,41 @@ public class MainActivity extends AppCompatActivity {
 
     public void answer(View v) {
         String answer = ((TextView) v).getText().toString();
+        int number = Integer.parseInt(((TextView) ((LinearLayout) v.getParent().getParent()).findViewById(R.id.tv_number)).getText().toString());
+        webView.loadUrl("javascript:" +
+                "(function () {" +
+                "    var questionLi = document.getElementsByClassName(\"marBom50 questionLi\")[" + (number - 1) + "];" +
+                "    switch (questionLi.getAttribute(\"typename\")) {" +
+                "        case \"单选题\":" +
+                "            var answerBgs = questionLi.getElementsByClassName(\"clearfix answerBg\");" +
+                "            for (var i = 0; i < answerBgs.length; i++) {" +
+                "                if (answerBgs[i].getElementsByClassName(\"fl answer_p\")[0].innerText == \"" + answer + "\") {" +
+                "                    answerBgs[i].click();" +
+                "                    break;" +
+                "                }" +
+                "            }" +
+                "            break;" +
+                "        case \"多选题\":" +
+                "            var answerBgs = questionLi.getElementsByClassName(\"clearfix answerBg\");" +
+                "            for (var i = 0; i < answerBgs.length; i++) {" +
+                "                if (\"" + answer + "\".includes(answerBgs[i].getElementsByClassName(\"fl answer_p\")[0].innerText)) {" +
+                "                    answerBgs[i].click();" +
+                "                }" +
+                "            }" +
+                "            break;" +
+                "        case \"判断题\":" +
+                "            var answerBgs = questionLi.getElementsByClassName(\"clearfix answerBg\");" +
+                "            if ([\"√\", \"对\", \"正确\"].includes(\"" + answer + "\")) {" +
+                "                answerBgs[0].click();" +
+                "            } else if ([\"×\", \"错\", \"错误\"].includes(\"" + answer + "\")) {" +
+                "                answerBgs[1].click();" +
+                "            }" +
+                "            break;" +
+                "        case \"填空题\":" +
+                "            questionLi.getElementsByClassName(\"edui-editor-iframeholder edui-default\")[0].lastChild.contentDocument.getElementsByClassName(\"view\")[1].innerText = \"" + answer + "\";" +
+                "            break;" +
+                "    }" +
+                "})()");
     }
 
     public void copyQuestion(View v) {
